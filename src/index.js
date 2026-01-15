@@ -103,12 +103,12 @@ app.get('/', (req, res) => {
 });
 
 // Start server if not running on Vercel
-if (!process.env.VERCEL) {
-  connectDB().then(() => {
-    app.listen(PORT, () => {
-      console.log(`Server running on port ${PORT}`);
-    });
+// if (!process.env.VERCEL) {
+connectDB().then(() => {
+  app.listen(PORT, () => {
+    console.log(`Server running on port ${PORT}`);
   });
-}
+});
+// }
 
 export default app;
