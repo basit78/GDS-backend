@@ -1,18 +1,17 @@
 import 'dotenv/config';
 import express from 'express';
-import mongoose from 'mongoose';
 import cors from 'cors';
 import flightRoutes from './routes/flight-routes.js';
 import authRoutes from './routes/auth-routes.js';
 import session from 'express-session';
 import MongoStore from 'connect-mongo';
+import connectDB from './config/db.js';
 
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-mongoose.connect(process.env.MONGODB_URI)
-  .then(() => console.log('Connected to MongoDB'))
-  .catch(err => console.error('MongoDB connection error:', err));
+// Connect to Database
+connectDB();
 
 const allowedOrigins = [
   'http://localhost:3000',
