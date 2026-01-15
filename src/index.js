@@ -49,7 +49,7 @@ async function connectDB() {
 
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://gds-frontend.vercel.app/login'
+  'https://gds-frontend.vercel.app'
 ];
 
 app.use(cors({
