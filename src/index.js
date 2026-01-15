@@ -46,7 +46,7 @@ async function connectDB() {
 
   return cached.conn;
 }
-
+// test
 const allowedOrigins = [
   'http://localhost:3000',
   'https://gds-frontend.vercel.app'
