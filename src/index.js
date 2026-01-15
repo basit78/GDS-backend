@@ -10,43 +10,10 @@ import MongoStore from 'connect-mongo';
 const app = express();
 const PORT = process.env.PORT || 5000;
 
-// -- Mongoose Connection Caching for Serverless --
-let cached = global.mongoose;
-if (!cached) {
-  cached = global.mongoose = { conn: null, promise: null };
-}
+mongoose.connect(process.env.MONGODB_URI)
+  .then(() => console.log('Connected to MongoDB'))
+  .catch(err => console.error('MongoDB connection error:', err));
 
-async function connectDB() {
-  if (cached.conn) {
-    return cached.conn;
-  }
-
-  if (!cached.promise) {
-    const opts = {
-      bufferCommands: false,
-    };
-
-    if (!process.env.MONGODB_URI) {
-      throw new Error("Please define the MONGODB_URI environment variable");
-    }
-
-    cached.promise = mongoose.connect(process.env.MONGODB_URI, opts).then((mongoose) => {
-      console.log('New MongoDB connection established');
-      return mongoose;
-    });
-  }
-
-  try {
-    cached.conn = await cached.promise;
-  } catch (e) {
-    cached.promise = null;
-    console.error('MongoDB connection error:', e);
-    throw e;
-  }
-
-  return cached.conn;
-}
-// test
 const allowedOrigins = [
   'http://localhost:3000',
   'https://gds-frontend.vercel.app'
@@ -58,22 +25,9 @@ app.use(cors({
 }));
 app.options('*', cors());
 
-// Ensure DB is connected for every request
-app.use(async (req, res, next) => {
-  if (req.path === '/') return next(); // Skip DB for health check if desired, but keeping it simple
-  try {
-    await connectDB();
-    next();
-  } catch (error) {
-    next(error);
-  }
-});
-
 // Session: store in MongoDB
-// Note: MongoStore creates its own connection if mongoUrl is provided. 
-// Ideally reuse the connection but for now we keep it simple as it handles itself well.
 app.use(session({
-  secret: process.env.SESSION_SECRECT || 'default_secret', // Fallback to prevent crash if missing
+  secret: process.env.SESSION_SECRECT,
   resave: false,
   saveUninitialized: false,
   store: MongoStore.create({
@@ -102,13 +56,7 @@ app.get('/', (req, res) => {
   res.send('GDS Flight Booking API is running');
 });
 
-// Start server if not running on Vercel
-// if (!process.env.VERCEL) {
-connectDB().then(() => {
-  app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`);
-  });
+// Start server
+app.listen(PORT, () => {
+  console.log(`Server running on port ${PORT}`);
 });
-// }
-
-export default app;
